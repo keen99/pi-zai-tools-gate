@@ -1,14 +1,14 @@
 {
-  "name": "pi-zai-gate",
+  "name": "pi-zai-tools-gate",
   "version": "1.0.0",
   "description": "pi extension: gate zai_* tools to specific model providers so non-zai models use their own native vision/search/etc.",
   "keywords": ["pi-package", "pi-extension", "zai", "glm", "tools", "model", "gate", "vision"],
   "license": "MIT",
   "author": "David Raistrick",
-  "homepage": "https://github.com/keen99/pi-zai-gate",
+  "homepage": "https://github.com/keen99/pi-zai-tools-gate",
   "repository": {
     "type": "git",
-    "url": "https://github.com/keen99/pi-zai-gate.git"
+    "url": "https://github.com/keen99/pi-zai-tools-gate.git"
   },
   "type": "module",
   "main": "./index.ts",

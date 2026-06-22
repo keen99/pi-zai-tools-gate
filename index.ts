@@ -1,4 +1,4 @@
-// zai-gate: only expose zai_* tools when the active model's provider is in the
+// pi-zai-tools-gate: only expose zai_* tools when the active model's provider is in the
 // allow-list (default: ["zai"]). When switching to GPT/Claude/etc., all zai_*
 // tools are deactivated so the model uses its own native capabilities instead.
 //

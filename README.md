@@ -1,4 +1,4 @@
-# pi-zai-gate
+# pi-zai-tools-gate
 
 Pi extension that gates `zai_*` tools to specific model providers.
 
@@ -24,13 +24,13 @@ No manual toggling. Switch models freely; zai tools follow the active provider.
 ## Install
 
 ```bash
-pi install git:github.com/keen99/pi-zai-gate
+pi install git:github.com/keen99/pi-zai-tools-gate
 ```
 
 Or from a local checkout:
 
 ```bash
-pi install /absolute/path/to/pi-zai-gate
+pi install /absolute/path/to/pi-zai-tools-gate
 ```
 
 ## Requirements
