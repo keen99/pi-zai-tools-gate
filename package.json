@@ -1,8 +1,17 @@
 {
   "name": "pi-zai-tools-gate",
-  "version": "1.0.0",
-  "description": "pi extension: gate zai_* tools to specific model providers so non-zai models use their own native vision/search/etc.",
-  "keywords": ["pi-package", "pi-extension", "zai", "glm", "tools", "model", "gate", "vision"],
+  "version": "1.1.0",
+  "description": "pi extension: gate zai_* tools to zai providers and to models without native image input so every model uses its own capabilities.",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "zai",
+    "glm",
+    "tools",
+    "model",
+    "gate",
+    "vision"
+  ],
   "license": "MIT",
   "author": "David Raistrick",
   "homepage": "https://github.com/keen99/pi-zai-tools-gate",
@@ -18,7 +27,9 @@
     "check": "echo 'nothing to check'"
   },
   "pi": {
-    "extensions": ["./index.ts"]
+    "extensions": [
+      "./index.ts"
+    ]
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*"

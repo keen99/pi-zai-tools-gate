@@ -1,13 +1,22 @@
 // pi-zai-tools-gate: only expose zai_* tools when the active model's provider is in the
-// allow-list (default: ["zai"]). When switching to GPT/Claude/etc., all zai_*
+// allow-list (default: ["zai", "zai-1m"]). When switching to GPT/Claude/etc., all zai_*
 // tools are deactivated so the model uses its own native capabilities instead.
+//
+// Additionally, when the active model has native image input (e.g. GLM-5.3-Flash),
+// zai_vision_* tools are deactivated so native multimodal input is used instead —
+// except tools in visionKeep (default: zai_vision_analyze_video, since pi cannot
+// attach video to the model directly). Web search / reader / zread tools are
+// never affected by vision gating.
 //
 // Config in ~/.pi/agent/settings.json (or .pi/settings.json):
 //   "zaiGate": {
-//     "allowProviders": ["zai"],            // providers that may use zai tools
+//     "allowProviders": ["zai", "zai-1m"],   // providers that may use zai tools
 //     "toolPrefix": "zai_",                 // tools with this name prefix are gated
 //     "alwaysAllow": ["zai_web_reader"],    // optional: keep these regardless
-//     "allowForImageInput": false           // optional: also allow when model has no image input
+//     "allowForImageInput": false,           // optional: also allow when model has no image input
+//     "visionToolPrefix": "zai_vision",      // prefix gated off for native-image models
+//     "visionKeep": ["zai_vision_analyze_video"], // vision tools kept for native-image models
+//     "gateVisionWhenNativeImage": true      // disable vision gating if false
 //   }
 //
 // All keys optional. Defaults shown above.
@@ -22,13 +31,19 @@ interface ZaiGateConfig {
   toolPrefix?: string;
   alwaysAllow?: string[];
   allowForImageInput?: boolean;
+  visionToolPrefix?: string;
+  visionKeep?: string[];
+  gateVisionWhenNativeImage?: boolean;
 }
 
 const DEFAULTS: Required<ZaiGateConfig> = {
-  allowProviders: ["zai"],
+  allowProviders: ["zai", "zai-1m"],
   toolPrefix: "zai_",
   alwaysAllow: [],
   allowForImageInput: false,
+  visionToolPrefix: "zai_vision",
+  visionKeep: ["zai_vision_analyze_video"],
+  gateVisionWhenNativeImage: true,
 };
 
 function loadConfig(): Required<ZaiGateConfig> {
@@ -75,6 +90,18 @@ function applyGate(pi: ExtensionAPI, provider: string | undefined, hasImageInput
     const all = pi.getAllTools().map((t) => t.name);
     const missing = all.filter((name) => isGated(name) && !current.includes(name));
     next = [...current, ...missing];
+
+    // Native-image vision gating: the model sees images itself, so remote
+    // vision tools would shadow native multimodal input. Video stays (pi
+    // cannot attach video directly); alwaysAllow always wins.
+    if (cfg.gateVisionWhenNativeImage && hasImageInput) {
+      next = next.filter(
+        (name) =>
+          !name.startsWith(cfg.visionToolPrefix) ||
+          cfg.visionKeep.includes(name) ||
+          cfg.alwaysAllow.includes(name),
+      );
+    }
   } else {
     next = current.filter((name) => !isGated(name));
   }
