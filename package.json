@@ -1,6 +1,6 @@
 {
   "name": "pi-zai-tools-gate",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "pi extension: gate zai_* tools to zai providers and to models without native image input so every model uses its own capabilities.",
   "keywords": [
     "pi-package",

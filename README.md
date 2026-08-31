@@ -19,7 +19,7 @@ On `session_start` and every `model_select` (i.e. `/model`, model cycling, sessi
 - Checks the active model's `provider`.
 - If the provider is in `allowProviders` (default: `["zai", "zai-1m"]`) → all `zai_*` tools stay active.
 - If the provider is **not** allowed → every `zai_*` tool (except those in `alwaysAllow`) is deactivated via `setActiveTools`. The model falls back to its own native tools.
-- **Native-image vision gating**: when the provider is allowed **and** the model accepts image input (e.g. GLM-5.3-Flash via [pi-zai-models](https://github.com/keen99/pi-zai-models)), `zai_vision_*` tools are deactivated so the model uses its native multimodal input instead. Tools in `visionKeep` (default: `zai_vision_analyze_video`, because pi cannot attach video to a model directly) and `alwaysAllow` stay. Web search / web reader / zread tools are **never** affected by vision gating — no pi model has native web search, so those tools remain the only search path.
+- **Native-image vision gating**: when the provider is allowed **and** the model accepts image input (e.g. GLM-5.3-Flash via [pi-zai-models](https://github.com/keen99/pi-zai-models)), **all** `zai_vision_*` tools are deactivated so the model uses its native multimodal input instead — including `zai_vision_analyze_video` (pi cannot attach video to a model anyway, and a visible video tool caused tool-confusion loops: the model grabbed it for image tasks). Tools in `visionKeep` (default: none) and `alwaysAllow` stay. Web search / web reader / zread tools are **never** affected by vision gating — no pi model has native web search, so those tools remain the only search path.
 - Switching back reactivates the gated-off tools automatically.
 
 No manual toggling. Switch models freely; zai tools follow the active provider and modality.
@@ -53,7 +53,7 @@ All config is optional and lives in `settings.json` (global: `~/.pi/agent/settin
     "alwaysAllow": ["zai_web_reader", "zai_zread_search_doc"],
     "allowForImageInput": false,
     "visionToolPrefix": "zai_vision",
-    "visionKeep": ["zai_vision_analyze_video"],
+    "visionKeep": [],
     "gateVisionWhenNativeImage": true
   }
 }
@@ -66,7 +66,7 @@ All config is optional and lives in `settings.json` (global: `~/.pi/agent/settin
 | `alwaysAllow` | `string[]` | `[]` | Tool names to keep active for **every** model, regardless of provider or modality. Use this for tools with no good native equivalent (e.g. `zai_web_reader`, `zai_zread_*`). |
 | `allowForImageInput` | `boolean` | `false` | If `true`, also allow zai tools for models that have **no** image input capability (i.e. text-only models). Useful if you only care about preventing zai from shadowing native vision and want zai to fill the gap for text-only models. |
 | `visionToolPrefix` | `string` | `"zai_vision"` | Prefix gated off for models with native image input. |
-| `visionKeep` | `string[]` | `["zai_vision_analyze_video"]` | Vision-prefix tools kept active even for native-image models (pi cannot attach video directly, so the remote video tool stays useful). |
+| `visionKeep` | `string[]` | `[]` | Vision-prefix tools kept active even for native-image models. Default empty: leave `zai_vision_analyze_video` visible and vision-capable models grab it for image tasks (observed with GLM-5.3-Flash). If you do remote video analysis from pi, opt back in: `"visionKeep": ["zai_vision_analyze_video"]`. |
 | `gateVisionWhenNativeImage` | `boolean` | `true` | Master switch for native-image vision gating. `false` disables it; vision tools then stay active for allowed providers regardless of modality. |
 
 ### Defaults
