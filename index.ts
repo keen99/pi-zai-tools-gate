@@ -4,9 +4,8 @@
 //
 // Additionally, when the active model has native image input (e.g. GLM-5.3-Flash),
 // zai_vision_* tools are deactivated so native multimodal input is used instead —
-// except tools in visionKeep (default: none — a visible video tool caused
-// tool-confusion loops: GLM-5.3-Flash grabbed zai_vision_analyze_video for
-// image OCR tasks and burned turns on junk calls). Web search / reader / zread tools are
+// except tools in visionKeep (default: zai_vision_analyze_video, since pi cannot
+// attach video to the model directly). Web search / reader / zread tools are
 // never affected by vision gating.
 //
 // Config in ~/.pi/agent/settings.json (or .pi/settings.json):
@@ -16,7 +15,7 @@
 //     "alwaysAllow": ["zai_web_reader"],    // optional: keep these regardless
 //     "allowForImageInput": false,           // optional: also allow when model has no image input
 //     "visionToolPrefix": "zai_vision",      // prefix gated off for native-image models
-//     "visionKeep": [],                            // vision tools kept for native-image models
+//     "visionKeep": ["zai_vision_analyze_video"], // vision tools kept for native-image models
 //     "gateVisionWhenNativeImage": true      // disable vision gating if false
 //   }
 //
@@ -43,7 +42,7 @@ const DEFAULTS: Required<ZaiGateConfig> = {
   alwaysAllow: [],
   allowForImageInput: false,
   visionToolPrefix: "zai_vision",
-  visionKeep: [],
+  visionKeep: ["zai_vision_analyze_video"],
   gateVisionWhenNativeImage: true,
 };
 
