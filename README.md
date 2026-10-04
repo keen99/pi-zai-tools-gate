@@ -1,5 +1,8 @@
 # pi-zai-tools-gate
 
+![release-watch](https://github.com/keen99/pi-zai-tools-gate/actions/workflows/release-watch.yml/badge.svg)
+[![pi tested](https://img.shields.io/github/v/release/keen99/pi-zai-tools-gate?label=pi%20tested%200.75.0%20%E2%86%92)](https://github.com/keen99/pi-zai-tools-gate/releases)
+
 Pi extension that gates `zai_*` tools to specific model providers.
 
 ## The problem
@@ -27,6 +30,10 @@ No manual toggling. Switch models freely; zai tools follow the active provider a
 ## Install
 
 ```bash
+# ssh
+pi install git:git@github.com:keen99/pi-zai-tools-gate
+
+# https
 pi install git:github.com/keen99/pi-zai-tools-gate
 ```
 
@@ -150,6 +157,29 @@ Config is re-read from `settings.json` on every event, so changes take effect on
 - The extension can only re-activate tools that are **currently registered**. If `pi-zai-tools` failed to load (missing `ZAI_API_KEY`, module error, etc.), switching to an allowed provider cannot bring them back. Fix the underlying load issue, then switch models to re-trigger the gate.
 - `setActiveTools` replaces the active set. The extension is careful to preserve the rest of your tool list (it only adds/removes the gated names), but if another extension also manages the active tool set at the same moment, they may race. In practice this is not an issue because the gate runs on discrete model-switch events.
 - Provider matching is by exact `provider` string. If you rename providers via custom config, update `allowProviders` to match.
+
+## Development
+
+```sh
+npm run check       # typecheck + 13 unit tests (gate matrix, config precedence, hooks)
+npm run test:matrix # deep smoke on every published pi release >= 0.75.0
+```
+
+Unit tests cover the gate matrix with an injectable config: provider
+allow/deny, the allowForImageInput escape hatch, reactivation
+semantics (current-first order, gated-only resurrection — alwaysAllow
+protects from stripping but never resurrects inactive tools), vision
+gating on native-image models (visionKeep, alwaysAllow,
+gateVisionWhenNativeImage=false), config precedence (project
+.pi/settings.json over defaults, malformed file falls back), and the
+session_start / model_select hooks. The matrix boots each pinned pi
+release in RPC mode with the extension loaded and asserts the
+post-gate tool list on the real process. Cached pi installs live in
+`.matrix-cache/` and are reused across runs.
+
+`ZAI_GATE_DEBUG=1` writes a session_start marker (provider, image
+capability, active tools); `PI_TEST_BIN` overrides the pi binary in
+the smoke. Tests are hermetic — config reads use temp cwd.
 
 ## License
 

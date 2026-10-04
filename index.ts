@@ -21,8 +21,8 @@
 //
 // All keys optional. Defaults shown above.
 
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { readFileSync } from "node:fs";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -36,7 +36,7 @@ interface ZaiGateConfig {
   gateVisionWhenNativeImage?: boolean;
 }
 
-const DEFAULTS: Required<ZaiGateConfig> = {
+export const DEFAULTS: Required<ZaiGateConfig> = {
   allowProviders: ["zai", "zai-1m"],
   toolPrefix: "zai_",
   alwaysAllow: [],
@@ -46,7 +46,7 @@ const DEFAULTS: Required<ZaiGateConfig> = {
   gateVisionWhenNativeImage: true,
 };
 
-function loadConfig(): Required<ZaiGateConfig> {
+export function loadConfig(): Required<ZaiGateConfig> {
   const candidates = [
     join(process.cwd(), ".pi", "settings.json"),
     join(homedir(), ".pi", "agent", "settings.json"),
@@ -64,7 +64,7 @@ function loadConfig(): Required<ZaiGateConfig> {
   return { ...DEFAULTS };
 }
 
-function gateAllowed(
+export function gateAllowed(
   provider: string | undefined,
   hasImageInput: boolean,
   cfg: Required<ZaiGateConfig>,
@@ -74,8 +74,13 @@ function gateAllowed(
   return false;
 }
 
-function applyGate(pi: ExtensionAPI, provider: string | undefined, hasImageInput: boolean) {
-  const cfg = loadConfig();
+export function applyGate(
+  pi: ExtensionAPI,
+  provider: string | undefined,
+  hasImageInput: boolean,
+  cfgOverride?: Required<ZaiGateConfig>,
+) {
+  const cfg = cfgOverride ?? loadConfig();
   const allowed = gateAllowed(provider, hasImageInput, cfg);
 
   const current = pi.getActiveTools();
@@ -119,6 +124,17 @@ export default function zaiGateExtension(pi: ExtensionAPI) {
     const provider = ctx.model?.provider;
     const hasImageInput = (ctx.model?.input ?? []).includes("image");
     applyGate(pi, provider, hasImageInput);
+
+    if (process.env.ZAI_GATE_DEBUG === "1") {
+      try {
+        const agentDir = process.env.PI_CODING_AGENT_DIR || join(homedir(), ".pi", "agent");
+        mkdirSync(agentDir, { recursive: true });
+        writeFileSync(
+          join(agentDir, "zai-gate-loaded.json"),
+          JSON.stringify({ loaded: true, provider: provider ?? null, hasImageInput, active: pi.getActiveTools() }) + "\n",
+        );
+      } catch { /* debug marker best-effort */ }
+    }
   });
 
   pi.on("model_select", async (event) => {
